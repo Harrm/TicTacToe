@@ -5,12 +5,12 @@
 #include <array>
 #include <tuple>
 using std::array;
+enum class Player {X, O};
 
 
 
 class Field {
 public:
-    enum class Player {X, O};
     enum class CellState {Empty, X, O};
     enum class GameState {Continues, Deadhead, XWin, OWin};
 
@@ -21,15 +21,18 @@ public:
     void selectCell(const Point& cell_coords);
     GameState getGameState() const;
     CellState getCellState(const Point& coords) const;
+    const array<array<CellState, 3>, 3>& getCells() const;
+    array<CellState, 3> getLine(int index) const;
+    array<CellState, 3> getRow(int index) const;
+    static constexpr Player nextPlayer(Player player);
+    static constexpr Player cellStateToPlayer(CellState state);
 
 private:
-    static constexpr Player cellStateToPlayer(CellState state);
-    static constexpr Player nextPlayer(Player player);
     bool checkDeadhead() const;
     std::tuple<bool, Player> checkVictory() const;
     void updateGameState();
 
-    array<array<CellState, 3>, 3> field;
+    array<array<Field::CellState, 3>, 3> field;
     Player firstPlayer = Player::X;
     Player currentPlayer;
     GameState state;

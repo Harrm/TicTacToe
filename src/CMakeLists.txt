@@ -7,7 +7,9 @@ game
 field
 window
 sprite
+text_sprite
 ai
+texture
 support_structs.hpp
 )
 

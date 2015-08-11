@@ -1,12 +1,13 @@
 #pragma once
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
-#include "sprite.hpp"
-#include "field.hpp"
-#include <memory>
-using std::unique_ptr;
-class SDL_Window;
+#include <string>
+#include <vector>
+using std::string;
+using std::vector;
 class SDL_Renderer;
+class SDL_Window;
+class Sprite;
 
 
 
@@ -15,42 +16,21 @@ public:
     Window();
     ~Window();
 
-    void drawFrame();
-    bool isRunning() const;
+    void startDraw();
+    void endDraw();
+    void drawSprite(const Sprite* sprite);
+
+    SDL_Renderer* getRenderer() const;
+
+    int showMessageBox(const string& title,
+                       const string& text,
+                       const vector<string>& buttons) const;
 
 private:
-    enum class State {Menu, Game};
-
-    void drawField();
-    void drawMenu();
-    void processEvents();
-    void proccessPlayerTurn(const Point& mouse_coords);
-    void gameOver();
-    void showGameOverMessageBox(string result);
-    void resize(int width, int height);
-
-    Field field;
-
-    State state = State::Menu;
+    void showGameOverMessageBox(const string& result);
 
     SDL_Window* window;
     SDL_Renderer* renderer;
-
-    unique_ptr<Sprite> textNewGame;
-    unique_ptr<Sprite> textOptions;
-    unique_ptr<Sprite> textExit;
-
-    unique_ptr<Sprite> X;
-    unique_ptr<Sprite> O;
-    unique_ptr<Sprite> cellBackground;
-    unique_ptr<Sprite> background;
-    unique_ptr<Sprite> buttonBackground;
-
-    int offsetToTopLeftCorner = 100;
-    Size size = {800, 600};
-    int fieldSize = 300;
-
-    bool running = true;
 };
 
 #endif // WINDOW_HPP

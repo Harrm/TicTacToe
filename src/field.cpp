@@ -4,8 +4,8 @@
 
 
 Field::Field() {
-    for(auto& row: field) {
-        row.fill(CellState::Empty);
+    for(auto& c: field) {
+        c.fill(CellState::Empty);
     }
 }
 
@@ -14,8 +14,8 @@ Field::Field() {
 void Field::newGame() {
     state = GameState::Continues;
 
-    for(auto& row: field) {
-        row.fill(CellState::Empty);
+    for(auto& c: field) {
+        c.fill(CellState::Empty);
     }
     firstPlayer = nextPlayer(firstPlayer);
     currentPlayer = firstPlayer;
@@ -24,7 +24,8 @@ void Field::newGame() {
 
 
 void Field::selectCell(const Point& cell_coords) {
-    if(cell_coords.x > 3 and cell_coords.y > 3) {
+    if(cell_coords.x > 2 or cell_coords.y > 2 or
+       cell_coords.x < 0 or cell_coords.y < 0) {
         std::invalid_argument e("Coords out of field");
         throw e;
     }
@@ -56,8 +57,8 @@ Field::GameState Field::getGameState() const {
 bool Field::checkDeadhead() const {
     short emptyCellsCount = 9;
 
-    for(auto& row: field) {
-        for(auto& cell: row) {
+    for(auto& line: field) {
+        for(auto& cell: line) {
             if(cell != CellState::Empty) {
                 emptyCellsCount--;
             }
@@ -71,34 +72,35 @@ bool Field::checkDeadhead() const {
 
 
 
-std::tuple<bool, Field::Player> Field::checkVictory() const {
+std::tuple<bool, Player> Field::checkVictory() const {
     Player winner;
     bool isVictory = false;
 
     for(short c = 0; c < 3; c++) {
-        if(field[c][0] != CellState::Empty and
-           field[c][0] == field[c][1] and
-           field[c][0] == field[c][2]) {
-            winner = cellStateToPlayer(field[c][0]);
-            isVictory = true;
+        auto line = getLine(c);
+        if(line[0] != CellState::Empty and
+           line[0] == line [1] and
+           line[1] == line[2]) {
+            return std::make_tuple(true, cellStateToPlayer(line[0]));
         }
-        if(field[0][c] == field[1][c] and
-           field[0][c] == field[2][c] and
-           field[0][c] != CellState::Empty) {
-            winner = cellStateToPlayer(field[0][c]);
-            isVictory = true;
+
+        auto row = getRow(c);
+        if(row[0] != CellState::Empty and
+           row[0] == row[1] and
+           row[1] == row[2]) {
+            return std::make_tuple(true, cellStateToPlayer(row[0]));
         }
-    }
-    if((field[1][1] != CellState::Empty) and
-       ((field[0][0] == field[1][1] and
-        field[0][0] == field[2][2]) or
-       (field[0][2] == field[1][1] and
-        field[0][2] == field[2][0]))) {
-        winner = cellStateToPlayer(field[1][1]);
-        isVictory = true;
     }
 
-    return std::make_tuple(isVictory, winner);
+    if((field[1][1] != CellState::Empty) and
+       ((field[0][0] == field[2][2] and
+         field[0][0] == field[1][1]) or
+        (field[0][2] == field[2][0] and
+         field[0][2] == field[1][1]))) {
+        return std::make_tuple(true, cellStateToPlayer(field[1][1]));
+    }
+
+    return std::make_tuple(false, Player());
 }
 
 
@@ -126,12 +128,34 @@ Field::CellState Field::getCellState(const Point& coords) const {
 
 
 
-constexpr Field::Player Field::nextPlayer(Player player) {
+const array<array<Field::CellState, 3>, 3>& Field::getCells() const {
+    return field;
+}
+
+
+
+array<Field::CellState, 3> Field::getLine(int index) const {
+    return field.at(index);
+}
+
+
+
+array<Field::CellState, 3> Field::getRow(int index) const {
+    array<Field::CellState, 3> row;
+    for(short c = 0; c < 3; c++) {
+        row.at(c) = field.at(c).at(index);
+    }
+    return row;
+}
+
+
+
+constexpr Player Field::nextPlayer(Player player) {
     return (player == Player::X) ? Player::O : Player::X;
 }
 
 
 
-constexpr Field::Player Field::cellStateToPlayer(CellState state) {
+constexpr Player Field::cellStateToPlayer(CellState state) {
     return (state == CellState::X) ? Player::X : Player::O;
 }
